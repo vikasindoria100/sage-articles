@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>The Public API Key Was Never the Problem</title>
+  <meta name="description" content="Moltbook proved the agent internet was mostly an illusion — and that vibe coding without containment is a leak behind the wall." />
+</head>
+<body>
+  <article>
+    <h1>The Public API Key Was Never the Problem</h1>
+    <p><em>Moltbook proved the agent internet was mostly an illusion — and that vibe coding without containment is a leak behind the wall.</em></p>
+
+    <p><em>Everyone wants the agent that runs your inbox while you sleep. Almost nobody asks what happens when it wakes up in a room with no walls, no budget, and a database full of keys it was never supposed to touch. That question stopped being theoretical in January.</em></p>
+
+    <p><strong>The listing was not drugs or weapons.</strong></p>
+
+    <p>It was API credentials. Prompt-injection kits. Services that wipe an agent's memory for a fee. I followed the thread backward — not to a dark web forum, but to a product launch three days earlier that Tech Twitter had been calling the beginning of the agent internet.</p>
+
+    <p><strong>January 28, 2026.</strong> A social network built exclusively for AI agents. Reddit-shaped, except every poster was supposed to be autonomous software. Post, comment, upvote, join communities, send private messages. Within days the metrics looked like proof of a new era: millions of registered agents, millions of posts, Andrej Karpathy calling it sci-fi takeoff-adjacent.</p>
+
+    <p>The founder's own story made it more seductive. He said he had not written a line of code — just described the architecture and let AI build it. <strong>Vibe coding</strong> as launch strategy. No threat model. No security review. Imagination in, production out.</p>
+
+    <p>By <strong>January 31</strong>, researchers at <strong>Wiz</strong> had browsed the site like normal users and found something else entirely.</p>
+
+    <h2>What broke — and why the headline numbers lied</h2>
+
+    <p>Picture a house renovation that photographs beautifully. New cabinets. Fresh paint. A faucet that gleams in every shot. But behind the drywall, there is a slow leak — invisible in the listing photos, structural in every way that matters. You do not find it until the floor goes soft.</p>
+
+    <p>That is what a misconfigured database looks like from the outside.</p>
+
+    <p><strong>Moltbook</strong> — the agent social network — connected its frontend directly to <strong>Supabase</strong>, a backend service that lets apps talk to a database without a custom server in the middle. Supabase ships a public API key in client-side code on purpose. That key is not a secret; it identifies the project. Safety depends on <strong>Row Level Security (RLS)</strong>, a PostgreSQL feature that limits which rows each user can read or write. Configure RLS correctly and the public key is fine. Skip <strong>RLS</strong> and the same key becomes a master key to everything.</p>
+
+    <p><strong>Wiz</strong> reported no RLS. Full read and write on all tables. Among the data: on the order of <strong>1.5 million agent API keys</strong>, plus personal keys users had pasted into private messages. One misconfiguration. Multiple systems compromised at once.</p>
+
+    <p>Then the ratio that reframed the whole narrative:</p>
+
+    <p><strong>~1.5 million agents</strong> on the platform. <strong>~17,000 human owners</strong> in the database. An <strong>88-to-1</strong> split.</p>
+
+    <p>No meaningful rate limiting. Anyone could register agent fleets in a loop. Humans could post as agents with a basic API call. The agent internet, as marketed, was largely an illusion of scale.</p>
+
+    <p>On Moltbook's own feed, the top post was not an agent manifesto. It was a security researcher documenting the breach — <strong>315,563 upvotes</strong> and climbing while the database was still exposed.</p>
+
+    <h2>The part nobody puts in the launch tweet</h2>
+
+    <p>But here is the thing.</p>
+
+    <p>You will never build an agent that cannot be manipulated. Prompt injection does not need genius — on Moltbook, Wiz counted <strong>506 posts</strong> (about <strong>2.6%</strong> of the corpus) carrying injection-style payloads. Agents that read untrusted text will eventually read hostile text. The goal is not invincibility. The goal is <strong>containment</strong>: when something goes wrong, the blast radius stays small, the spend stops, and you can rewind.</p>
+
+    <p>That is a different design problem than "make the model smarter."</p>
+
+    <p>Imagine you hire someone sharp on Monday. You hand them a company credit card with no limit, a laptop with every port open, and no written rule about what they may spend or send. Tuesday the bill arrives. Wednesday you discover the laptop has been talking to a server you have never heard of. The person might be brilliant. You built a room with no walls and called it trust.</p>
+
+    <p><strong>Vibe coding</strong> — describing software in natural language and letting AI generate it — is not going away. The mistake is treating speed as a substitute for shape. Security is not a pre-launch checkbox. It is the architecture you commit to before the first user touches production.</p>
+
+    <h2>What containment actually looks like</h2>
+
+    <p>The fix is not one trick. It is nine habits working as a pipeline — input checked before execution, budget checked before spend, state snapshotted before long runs, compute isolated so a compromised agent cannot reach the host database, network egress filtered so exfiltration hits a wall, secrets fetched at runtime from a vault instead of embedded in JavaScript bundles, every action logged so postmortems are possible, and an orchestrator that refuses to deploy when a layer is missing.</p>
+
+    <p><strong>Firecracker microVMs</strong> — tiny virtual machines with their own kernel — are the compute answer: read-only filesystem, hard memory caps, boot in tens of milliseconds. A trapped agent stays trapped.</p>
+
+    <p><strong>Egress allowlists</strong> block the classic escape: ship stolen keys to an attacker-controlled server. Deny by default. Block internal and metadata IPs.</p>
+
+    <p><strong>Budget gates</strong> — often a Redis-backed check before any paid API call — act like a credit limit with per-minute, per-hour, and cumulative caps. The agent asks permission to spend before it spends.</p>
+
+    <p><strong>Turn limits and timeouts</strong> kill the infinite loop: "write an essay, analyse it, repeat forever" until your wallet and your CPU are empty.</p>
+
+    <p><strong>Two-layer input defense</strong> — pattern matching for obvious injection plus a lightweight model judge for semantic attacks — keeps latency under a few hundred milliseconds while catching most garbage before it reaches the agent core.</p>
+
+    <p><strong>Checkpoints</strong> treat agent state like a save point in a game: snapshot what it knew, what it was doing, hash it, roll back when corruption hits.</p>
+
+    <p>None of this makes agents boring. It makes failures boring — contained, observable, reversible. Moltbook's stack had the opposite property: any single bug could become a system breach because the layers were not there to catch each other.</p>
+
+    <h2>What this will not cover</h2>
+
+    <p>This is not a deployment guide for Firecracker or Vault. It is the argument underneath those tools: autonomy without isolation looks impressive on a dashboard and catastrophic in a postmortem. The next Moltbook already exists somewhere — built fast, launched loud, reviewed never.</p>
+
+    <p>The model was never the vulnerability. The <strong>permission boundary</strong> was.</p>
+
+    <p>Worth sitting with.</p>
+
+    <p><em>PS: The Supabase public key in client code was never the scandal. The scandal was launching without Row Level Security and calling it the future. Open three agent demos this week and ask one question: if this model did exactly what a malicious prompt asked, what could it touch? The honest answer is your architecture — not your model pick.</em></p>
+
+    <p><em>Findings referenced in this piece are from Wiz's security review of Moltbook (January 2026).</em></p>
+  </article>
+</body>
+</html>
