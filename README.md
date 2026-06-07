@@ -2,29 +2,20 @@
 
 Static HTML for Medium Import and public reading.
 
-**Live URL (after deploy):** `https://YOUR_GITHUB_USERNAME.github.io/sage-articles/`
+**Live URL (after deploy):** [https://vikasindoria100.github.io/sage-articles/](https://vikasindoria100.github.io/sage-articles/)
 
-## One-time setup
+## Deploy (one command)
 
-### 1. Create the repo on GitHub
-
-1. Go to [github.com/new](https://github.com/new)
-2. Repository name: **`sage-articles`**
-3. Public
-4. Do **not** add README, .gitignore, or license (this folder already has them)
-5. Create repository
-
-### 2. Push from this folder
-
-Replace `YOUR_GITHUB_USERNAME` with your GitHub username:
+From your **Mac Terminal** (not Cursor's sandbox — needs browser login):
 
 ```bash
-cd "content/sage/medium/github-pages"
-git remote add origin https://github.com/YOUR_GITHUB_USERNAME/sage-articles.git
-git push -u origin main
+cd "/Users/viksi/Documents/Medium & Substack/content/sage/medium/github-pages"
+./deploy.sh
 ```
 
-### 3. Enable GitHub Pages
+First run opens GitHub login in the browser. After that it pushes `index.html` and enables Pages.
+
+## Manual steps (if you prefer)
 
 1. Repo → **Settings** → **Pages**
 2. **Build and deployment** → Source: **Deploy from a branch**
@@ -33,7 +24,7 @@ git push -u origin main
 
 ### 4. Import into Medium
 
-1. Open your public URL: `https://YOUR_GITHUB_USERNAME.github.io/sage-articles/`
+1. Open your public URL: [https://vikasindoria100.github.io/sage-articles/](https://vikasindoria100.github.io/sage-articles/)
 2. Confirm the article renders in the browser
 3. Go to [medium.com/p/import](https://medium.com/p/import)
 4. Paste that URL → **Import**
